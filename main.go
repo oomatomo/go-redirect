@@ -1,36 +1,36 @@
 package main
 
 import (
+	log "github.com/cihub/seelog"
 	"html/template"
-	"log"
 	"net/http"
 	"os"
 )
 
-type Page struct {
+type page struct {
 	URL string
 }
 
 func checkError(err error) {
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 }
 
-func IndexHandler(w http.ResponseWriter, r *http.Request) {
+func indexHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	url := r.FormValue("url")
 
 	if url == "" {
-		log.Println("not url pramater")
+		log.Info("not url pramater")
 		t := template.Must(template.ParseFiles("error.html"))
 		w.WriteHeader(http.StatusInternalServerError)
 		t.Execute(w, nil)
 	} else {
-		log.Println("url: " + url)
+		log.Info("url: " + url)
 		t := template.Must(template.ParseFiles("index.html"))
-		page := Page{
+		page := page{
 			URL: url,
 		}
 		t.Execute(w, page)
@@ -39,6 +39,9 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	// root action
-	http.HandleFunc("/", IndexHandler)
-	http.ListenAndServe(":"+os.Getenv("PORT"), nil)
+	defer log.Flush()
+	log.Info("server start")
+	http.HandleFunc("/", indexHandler)
+	err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
+	checkError(err)
 }
