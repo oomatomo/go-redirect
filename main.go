@@ -23,7 +23,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	url := r.FormValue("url")
 
 	if url == "" {
-		log.Info("not url pramater")
+		log.Error("not url pramater")
 		t := template.Must(template.ParseFiles("error.html"))
 		w.WriteHeader(http.StatusInternalServerError)
 		t.Execute(w, nil)
@@ -39,9 +39,11 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	// root action
-	defer log.Flush()
+	logger, err := log.LoggerFromConfigAsFile("seelog.xml")
+	checkError(err)
+	log.ReplaceLogger(logger)
 	log.Info("server start")
 	http.HandleFunc("/", indexHandler)
-	err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
+	err = http.ListenAndServe(":"+os.Getenv("PORT"), nil)
 	checkError(err)
 }
