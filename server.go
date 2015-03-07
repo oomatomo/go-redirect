@@ -24,12 +24,16 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	if url == "" {
 		log.Error("not url pramater")
-		t := template.Must(template.ParseFiles("error.html"))
+		templ_file, err := Asset("file/error.html")
+		checkError(err)
+		t := template.Must(template.New("error.html").Parse(string(templ_file)))
 		w.WriteHeader(http.StatusInternalServerError)
 		t.Execute(w, nil)
 	} else {
 		log.Info("url: " + url)
-		t := template.Must(template.ParseFiles("index.html"))
+		templ_file, err := Asset("file/index.html")
+		checkError(err)
+		t := template.Must(template.New("index.html").Parse(string(templ_file)))
 		page := page{
 			URL: url,
 		}
@@ -39,7 +43,8 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	// root action
-	logger, err := log.LoggerFromConfigAsFile("seelog.xml")
+	log_file, _ := Asset("file/seelog.xml")
+	logger, err := log.LoggerFromConfigAsString(string(log_file))
 	checkError(err)
 	log.ReplaceLogger(logger)
 	log.Info("server start")
